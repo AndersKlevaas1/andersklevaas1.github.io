@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code Quest – Øyvalg</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <h1>🏝️ Code Quest</h1>
+  <p>Velg øya du står på i brettspillet for å få et spørsmål</p>
+
+  <!-- Øy-knapper -->
+  <div class="islands">
+    <button onclick="chooseIsland('variable')">📦 Variabel-øya</button>
+    <button onclick="chooseIsland('datatype')">🔤 Datatype-øya</button>
+    <button onclick="chooseIsland('object')">🧱 Objekt-øya</button>
+    <button onclick="chooseIsland('logic')">🧠 Logikk-øya</button>
+    <button onclick="chooseIsland('loop')">🔁 Løkke-øya</button>
+    <button onclick="chooseIsland('debug')">🐞 Debug-øya</button>
+  </div>
+
+  <!-- Spørsmålsboks (SKJULT FRA START) -->
+  <div id="questionBox" class="hidden">
+    <h2 id="questionText"></h2>
+    <div id="answers"></div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="script.js"></script>
+</body>
+</html>

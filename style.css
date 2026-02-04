@@ -1,0 +1,175 @@
+/* =========================
+   GRUNN / BAKGRUNN
+========================= */
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  margin: 0;
+  padding: 50px 20px;
+  text-align: center;
+  color: #1f2937;
+
+  background: linear-gradient(135deg, #eef2ff, #f8fafc, #eef2ff);
+  background-size: 300% 300%;
+  animation: gradientMove 18s ease infinite;
+}
+
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* =========================
+   TITLER
+========================= */
+
+h1 {
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+p {
+  color: #6b7280;
+  margin-bottom: 30px;
+}
+
+/* =========================
+   ØY-KNAPPER
+========================= */
+
+.islands {
+  margin-top: 25px;
+}
+
+.islands button {
+  background: white;
+  border: none;
+  border-radius: 999px;
+  padding: 14px 26px;
+  margin: 10px;
+
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+  transition: all 0.25s ease;
+}
+
+.islands button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.15);
+  background: #6366f1;
+  color: white;
+}
+
+/* =========================
+   SPØRSMÅLSKORT
+========================= */
+
+#questionBox {
+  background: white;
+  width: 340px;
+  margin: 40px auto 0 auto;
+  padding: 28px 24px;
+  border-radius: 16px;
+
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.10),
+    0 2px 6px rgba(0, 0, 0, 0.05);
+
+  animation: fadeSlideIn 0.35s ease;
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================
+   SVAR-KNAPPER
+========================= */
+
+#answers {
+  margin-top: 20px;
+}
+
+#answers button {
+  display: block;
+  width: 100%;
+  margin: 12px 0;
+  padding: 12px;
+
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 14px;
+}
+
+#answers button:hover {
+  background: #eef2ff;
+  border-color: #6366f1;
+  transform: scale(1.02);
+}
+
+/* =========================
+   SKJULT
+========================= */
+
+.hidden {
+  display: none;
+}
+
+/* =========================
+   RIKTIG / FEIL MARKERING
+========================= */
+
+.answer-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.feedback-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  opacity: 0;
+  animation: fadeIcon 3s ease forwards;
+}
+
+.correct-icon {
+  color: #16a34a;
+}
+
+.wrong-icon {
+  color: #dc2626;
+}
+
+@keyframes fadeIcon {
+  0% { opacity: 0; transform: translateY(-50%) scale(0.8); }
+  10% { opacity: 1; transform: translateY(-50%) scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* =========================
+   RESPONSIV
+========================= */
+
+@media (max-width: 500px) {
+  #questionBox {
+    width: 95%;
+  }
+}
