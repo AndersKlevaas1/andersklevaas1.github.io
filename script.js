@@ -155,10 +155,6 @@ for (let island in questions) {
  * 🔀 SHUFFLE FUNKSJON
  *************************************************/
 
-/*************************************************
- * 🔀 SHUFFLE FUNKSJON
- *************************************************/
-
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -196,7 +192,7 @@ const chanceCards = [
   "Bruk en annen nettleser. Vit stille.",
   "Klasser og arving meisket! Gå 2 steg fremover.",
   "JSON-feil! Vend et kort til.",
-  "API-kallet returnerte success! Gå fremover 3.",
+  "Gå i Fengsel!",
 ];
 
 /*************************************************
@@ -270,17 +266,35 @@ function showQuestion(question) {
  * 🎲 TREKK SJANSEKORT
  *************************************************/
 
+/*************************************************
+ * 🎲 TREKK SJANSEKORT
+ *************************************************/
+
 function drawChanceCard() {
-  // Trekk et tilfeldig kort fra banken
-  const randomIndex = Math.floor(Math.random() * chanceCards.length);
-  const card = chanceCards[randomIndex];
-  
-  // Vis kortet
-  document.getElementById("chanceCardBox").classList.remove("hidden");
-  document.getElementById("chanceCardText").innerText = card;
-  
-  // Scroll til kortet
-  document.getElementById("chanceCardBox").scrollIntoView({ behavior: "smooth", block: "center" });
+  try {
+    const randomIndex = Math.floor(Math.random() * chanceCards.length);
+    const card = chanceCards[randomIndex];
+    
+    console.log("Trekk kort nummer " + randomIndex + ": " + card);
+    
+    const textElement = document.getElementById("chanceCardText");
+    const boxElement = document.getElementById("chanceCardBox");
+    
+    if (textElement && boxElement) {
+      textElement.innerHTML = card;
+      boxElement.style.display = "block";
+      
+      // Scroll bruk
+      if (window.scrollTo) {
+        window.setTimeout(function() {
+          window.scrollTo(0, boxElement.offsetTop - 100);
+        }, 50);
+      }
+    }
+  } catch(err) {
+    console.error("Feil i drawChanceCard: " + err);
+    alert("Kortet kunne ikke åpnes");
+  }
 }
 
 /*************************************************
@@ -288,5 +302,20 @@ function drawChanceCard() {
  *************************************************/
 
 function closeChanceCard() {
-  document.getElementById("chanceCardBox").classList.add("hidden");
+  try {
+    const boxElement = document.getElementById("chanceCardBox");
+    if (boxElement) {
+      boxElement.style.display = "none";
+    }
+  } catch(err) {
+    console.error("Feil i closeChanceCard: " + err);
+  }
 }
+/*************************************************
+ * 📱 INITIALISERING FOR ANDROID
+ *************************************************/
+
+document.addEventListener("DOMContentLoaded", function() {
+  console.log("Siden er lastet. Sjansekort-funk definert:", typeof drawChanceCard);
+  console.log("Antall kort:", chanceCards.length);
+});
