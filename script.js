@@ -194,7 +194,7 @@ const chanceCards = [
   "Bruk en annen nettleser. Vit stille.",
   "Klasser og arving meisket! Gå 2 steg fremover.",
   "JSON-feil! Vend et kort til.",
-  "Gå i Fengsel!",
+  "API-kallet returnerte success! Gå fremover 3."
 ];
 
 /*************************************************
@@ -268,35 +268,15 @@ function showQuestion(question) {
  * 🎲 TREKK SJANSEKORT
  *************************************************/
 
-/*************************************************
- * 🎲 TREKK SJANSEKORT
- *************************************************/
-
 function drawChanceCard() {
-  try {
-    const randomIndex = Math.floor(Math.random() * chanceCards.length);
-    const card = chanceCards[randomIndex];
-    
-    console.log("Trekk kort nummer " + randomIndex + ": " + card);
-    
-    const textElement = document.getElementById("chanceCardText");
-    const boxElement = document.getElementById("chanceCardBox");
-    
-    if (textElement && boxElement) {
-      textElement.innerHTML = card;
-      boxElement.style.display = "block";
-      
-      // Scroll bruk
-      if (window.scrollTo) {
-        window.setTimeout(function() {
-          window.scrollTo(0, boxElement.offsetTop - 100);
-        }, 50);
-      }
-    }
-  } catch(err) {
-    console.error("Feil i drawChanceCard: " + err);
-    alert("Kortet kunne ikke åpnes");
-  }
+  const randomIndex = Math.floor(Math.random() * chanceCards.length);
+  const card = chanceCards[randomIndex];
+  
+  const box = document.getElementById("chanceCardBox");
+  box.classList.remove("hidden");
+  document.getElementById("chanceCardText").innerText = card;
+  
+  window.scrollTo(0, box.offsetTop - 50);
 }
 
 /*************************************************
@@ -304,20 +284,5 @@ function drawChanceCard() {
  *************************************************/
 
 function closeChanceCard() {
-  try {
-    const boxElement = document.getElementById("chanceCardBox");
-    if (boxElement) {
-      boxElement.style.display = "none";
-    }
-  } catch(err) {
-    console.error("Feil i closeChanceCard: " + err);
-  }
+  document.getElementById("chanceCardBox").style.display = "none";
 }
-/*************************************************
- * 📱 INITIALISERING FOR ANDROID
- *************************************************/
-
-document.addEventListener("DOMContentLoaded", function() {
-  console.log("Siden er lastet. Sjansekort-funk definert:", typeof drawChanceCard);
-  console.log("Antall kort:", chanceCards.length);
-});
