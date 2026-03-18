@@ -284,5 +284,5 @@ function drawChanceCard() {
  *************************************************/
 
 function closeChanceCard() {
-  document.getElementById("chanceCardBox").style.display = "none";
+  document.getElementById("chanceCardBox").classList.add("hidden");
 }
