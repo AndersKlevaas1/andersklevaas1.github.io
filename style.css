@@ -188,7 +188,89 @@ p {
   100% { opacity: 0; }
 }
 
+/* =========================
+   SJANSEKORT
+========================= */
 
+.chance-card-section {
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+
+.chance-btn {
+  padding: 15px 30px;
+  font-size: 18px;
+  font-weight: bold;
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+  transition: all 0.3s ease;
+}
+
+.chance-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
+}
+
+.chance-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.3);
+}
+
+#chanceCardBox {
+  background: linear-gradient(135deg, #fef3c7, #fed7aa);
+  border: 3px solid #f59e0b;
+  border-radius: 15px;
+  padding: 30px;
+  margin: 20px auto;
+  max-width: 500px;
+  box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);
+  animation: slideIn 0.4s ease;
+}
+
+#chanceCardBox h2 {
+  color: #b45309;
+  margin-top: 0;
+  font-size: 24px;
+}
+
+#chanceCardText {
+  font-size: 18px;
+  color: #92400e;
+  line-height: 1.6;
+  margin: 20px 0;
+  font-weight: 500;
+}
+
+#chanceCardBox button {
+  padding: 10px 25px;
+  font-size: 16px;
+  background: #f59e0b;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#chanceCardBox button:hover {
+  background: #d97706;
+  transform: translateY(-2px);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 /* =========================
    RESPONSIV

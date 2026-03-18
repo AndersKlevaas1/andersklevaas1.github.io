@@ -155,12 +155,49 @@ for (let island in questions) {
  * 🔀 SHUFFLE FUNKSJON
  *************************************************/
 
+/*************************************************
+ * 🔀 SHUFFLE FUNKSJON
+ *************************************************/
+
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
   }
 }
+
+/*************************************************
+ * 🎲 SJANSEKORT BANK
+ *************************************************/
+
+const chanceCards = [
+  "Du løst en bug! Gå ett steg fremover.",
+  "Feil i koden! Gå ett steg bakover.",
+  "Du brukte beste praksis! Trekk et ekstra kort.",
+  "Syntax error! Gå bakover 2 steg.",
+  "Du lærte noe nytt! Dobbelslag - kast på nytt.",
+  "Variabelen din inneholder null. Hopp bakover.",
+  "Perfekt testresultat! Gå fremover 2 steg.",
+  "Du glemte et semikolon. Gå bakover 1 steg.",
+  "Koden din er optimalisert! Trekk to kort.",
+  "Stack overflow! Gå bakover 3 steg.",
+  "Du skrev ryddig kode! +1 ekstra trekk.",
+  "Endelig løste du algoritmens! Gå fremover 3 steg.",
+  "Debuggingen tok lenger tid enn forventet. Vit stille 1 runde.",
+  "Du refaktorerte koden! Gå fremover 2 steg.",
+  "Runtime error! Mist ett trekk.",
+  "Du implementerte en ny funksjon! Gå 1 steg forover.",
+  "Uendelig løkke! Gå bakover 2 steg.",
+  "Alle tester var grønn! Trekk 2 kort.",
+  "Du leste dokumentasjonen! +1 ekstra poeng.",
+  "Memory leak! Gå bakover 1 steg.",
+  "Du brukte riktig datatype! Gå fremover.",
+  "Regex-mønsteret fungerte! Dobbelslag.",
+  "Bruk en annen nettleser. Vit stille.",
+  "Klasser og arving meisket! Gå 2 steg fremover.",
+  "JSON-feil! Vend et kort til.",
+  "API-kallet returnerte success! Gå fremover 3.",
+];
 
 /*************************************************
  * 🏝️ VELG ØY
@@ -229,3 +266,27 @@ function showQuestion(question) {
   });
 }
 
+/*************************************************
+ * 🎲 TREKK SJANSEKORT
+ *************************************************/
+
+function drawChanceCard() {
+  // Trekk et tilfeldig kort fra banken
+  const randomIndex = Math.floor(Math.random() * chanceCards.length);
+  const card = chanceCards[randomIndex];
+  
+  // Vis kortet
+  document.getElementById("chanceCardBox").classList.remove("hidden");
+  document.getElementById("chanceCardText").innerText = card;
+  
+  // Scroll til kortet
+  document.getElementById("chanceCardBox").scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+/*************************************************
+ * 🎲 LUKK SJANSEKORT
+ *************************************************/
+
+function closeChanceCard() {
+  document.getElementById("chanceCardBox").classList.add("hidden");
+}

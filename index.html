@@ -30,6 +30,18 @@
     <div id="answers"></div>
   </div>
 
+  <!-- Sjansekort-knapp og visning -->
+  <div class="chance-card-section">
+    <button id="chanceCardBtn" class="chance-btn" onclick="drawChanceCard()">🎲 Sjansekort?</button>
+  </div>
+
+  <!-- Sjansekort-boks (SKJULT FRA START) -->
+  <div id="chanceCardBox" class="hidden">
+    <h2>🎲 Sjansekort</h2>
+    <p id="chanceCardText"></p>
+    <button onclick="closeChanceCard()">Lukk kort</button>
+  </div>
+
   <!-- JavaScript -->
   <script src="script.js"></script>
 </body>
