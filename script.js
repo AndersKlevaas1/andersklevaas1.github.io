@@ -2,6 +2,8 @@
  * 🎯 SPØRSMÅLSDATA (ORIGINALE – RØRES IKKE)
  *************************************************/
 
+console.log("✅ script.js lastet!");
+
 const questions = {
   variable: [
     { question: "Hva er en variabel?", answers: ["En beholder for data", "En feilmelding", "En nettadresse"], correct: 0 },
