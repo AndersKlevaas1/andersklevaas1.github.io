@@ -85,6 +85,23 @@ h1 {
   text-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
 }
 
+.site-title {
+  background: none;
+  margin: 0 auto 10px;
+  padding: 0;
+  text-shadow: none;
+  line-height: 0;
+}
+
+.site-logo {
+  display: inline-block;
+  max-width: min(480px, 80vw);
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.35));
+}
+
 body > p {
   color: rgba(255, 255, 255, 0.85);
   font-size: 1rem;
@@ -610,7 +627,26 @@ body > p {
   margin: 20px auto 12px;
 }
 
+.chance-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+  pointer-events: none;
+}
+
+.chance-icon-lg {
+  width: 36px;
+  height: 36px;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
 .chance-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   padding: 14px 34px;
   font-family: inherit;
   font-size: 1rem;

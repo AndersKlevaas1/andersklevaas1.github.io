@@ -11,7 +11,7 @@
 
 <body>
 
-  <h1>🏝️ Code Island - Lær å kode</h1>
+  <h1 class="site-title"><img src="img/Logo.png" alt="Code Island – Lær å kode" class="site-logo" /></h1>
   <p>Velg øya du står på i brettspillet for å få et spørsmål</p>
 
   <!-- Vanskelighetsgrad-knapper -->
@@ -60,7 +60,10 @@
 
   <!-- Sjansekort-knapp og visning -->
   <div class="chance-card-section">
-    <button id="chanceCardBtn" class="chance-btn" onclick="drawChanceCard()">🎲 Sjansefelt?</button>
+    <button id="chanceCardBtn" class="chance-btn" onclick="drawChanceCard()">
+      <img src="img/Sjansefelt.png?v=2" alt="" class="chance-icon" />
+      <span>Sjansefelt?</span>
+    </button>
   </div>
 
   <!-- Badge-oversikt -->
@@ -89,7 +92,7 @@
 
   <!-- Sjansekort-boks (SKJULT FRA START) -->
   <div id="chanceCardBox" class="hidden">
-    <h2>🎲 Sjansefelt</h2>
+    <h2><img src="img/Sjansefelt.png?v=2" alt="" class="chance-icon chance-icon-lg" /> Sjansefelt</h2>
     <p id="chanceCardText"></p>
     <button onclick="closeChanceCard()">Lukk kort</button>
   </div>
