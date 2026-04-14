@@ -95,7 +95,7 @@ h1 {
 
 .site-logo {
   display: inline-block;
-  max-width: min(480px, 80vw);
+  max-width: min(280px, 80vw);
   width: 100%;
   height: auto;
   object-fit: contain;
