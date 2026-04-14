@@ -14,6 +14,16 @@
   <h1>🏝️ Code Island - Lær å kode</h1>
   <p>Velg øya du står på i brettspillet for å få et spørsmål</p>
 
+  <!-- Vanskelighetsgrad-knapper -->
+  <div class="difficulty-section">
+    <p style="margin-top: 0; margin-bottom: 15px; font-weight: bold;">Vanskelighetsgrad:</p>
+    <div class="difficulty-buttons">
+      <button class="difficulty-btn active" onclick="setDifficulty('ez')">Ez</button>
+      <button class="difficulty-btn" onclick="setDifficulty('med')">Med</button>
+      <button class="difficulty-btn" onclick="setDifficulty('hard')">Hard</button>
+    </div>
+  </div>
+
   <!-- Øy-knapper -->
   <div class="islands">
     <button onclick="chooseIsland('variable')">📦 1. Variabel-øya</button>
@@ -34,6 +44,30 @@
   <div class="chance-card-section">
     <button id="chanceCardBtn" class="chance-btn" onclick="drawChanceCard()">🎲 Sjansefelt?</button>
   </div>
+
+  <!-- Badge-oversikt -->
+  <section class="badge-tracker">
+    <div class="badge-tracker-header">
+      <div>
+        <p class="section-label">Badge-oversikt</p>
+        <h2>Hvem har hvilke badges?</h2>
+        <p class="badge-tracker-intro">Legg til spillerne og huk av én badge per øy når de vinner den.</p>
+      </div>
+      <button class="secondary-btn" type="button" onclick="resetBadges()">Nullstill badges</button>
+    </div>
+
+    <div class="player-form">
+      <input
+        type="text"
+        id="playerNameInput"
+        placeholder="Legg til spiller"
+        maxlength="20"
+      />
+      <button class="primary-btn" type="button" onclick="addPlayer()">Legg til spiller</button>
+    </div>
+
+    <div id="badgeTrackerTable" class="badge-table-wrapper"></div>
+  </section>
 
   <!-- Sjansekort-boks (SKJULT FRA START) -->
   <div id="chanceCardBox" class="hidden">
