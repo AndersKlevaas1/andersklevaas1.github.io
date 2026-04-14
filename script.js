@@ -8,12 +8,12 @@ console.log("✅ script.js lastet!");
 let currentDifficulty = "ez";
 const BADGE_STORAGE_KEY = "code-island-badges";
 const badgeIslands = [
-  { key: "variable", label: "📦 Variabel" },
-  { key: "datatype", label: "🔤 Datatype" },
-  { key: "object", label: "🧱 Objekt" },
-  { key: "logic", label: "🧠 Logikk" },
-  { key: "loop", label: "🔁 Løkke" },
-  { key: "debug", label: "🐞 Debug" }
+  { key: "variable", label: "Variabel", img: "img/Badge1.png" },
+  { key: "datatype", label: "Datatype", img: "img/Badge2.png" },
+  { key: "object",   label: "Objekt",   img: "img/Badge3.png" },
+  { key: "logic",    label: "Logikk",   img: "img/Badge4.png" },
+  { key: "loop",     label: "Løkke",    img: "img/Badge5.png" },
+  { key: "debug",    label: "Debug",    img: "img/Badge6.png" }
 ];
 let players = loadPlayers();
 
@@ -510,7 +510,7 @@ function renderBadgeTracker() {
   }
 
   const headers = badgeIslands
-    .map(island => `<th>${island.label}</th>`)
+    .map(island => `<th><div class="badge-th"><img src="${island.img}" alt="" class="badge-th-img" /><span>${island.label}</span></div></th>`)
     .join("");
 
   const rows = players
