@@ -181,6 +181,23 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION handle_new_user();
 
+-- Backfill profiler for brukere som allerede finnes i auth.users
+INSERT INTO profiles (id, username, elo, matches_played, wins, losses)
+SELECT
+  u.id,
+  COALESCE(
+    NULLIF(regexp_replace(COALESCE(u.raw_user_meta_data->>'username', u.raw_user_meta_data->>'full_name', split_part(u.email, '@', 1), 'player'), '[^a-zA-Z0-9_]', '', 'g'), ''),
+    'player_' || left(replace(u.id::text, '-', ''), 8)
+  ) AS username,
+  1000,
+  0,
+  0,
+  0
+FROM auth.users u
+LEFT JOIN profiles p ON p.id = u.id
+WHERE p.id IS NULL
+ON CONFLICT (id) DO NOTHING;
+
 -- cancel_matchmaking: spiller forlater køen
 CREATE OR REPLACE FUNCTION cancel_matchmaking()
 RETURNS VOID
@@ -506,8 +523,13 @@ BEGIN
 
   SELECT * INTO m FROM matches WHERE id = p_match_id;
   IF m IS NULL THEN RAISE EXCEPTION 'Match not found'; END IF;
+  IF m.status <> 'active' THEN RAISE EXCEPTION 'Match is not active'; END IF;
   IF m.player_a_id <> me AND m.player_b_id <> me THEN
     RAISE EXCEPTION 'Not a player in this match';
+  END IF;
+  IF (m.current_turn = 'player_a' AND m.player_a_id <> me)
+     OR (m.current_turn = 'player_b' AND m.player_b_id <> me) THEN
+    RAISE EXCEPTION 'Not your turn';
   END IF;
 
   SELECT SUM(weight) INTO total_weight FROM chance_cards;

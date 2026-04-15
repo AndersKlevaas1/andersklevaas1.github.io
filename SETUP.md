@@ -38,7 +38,25 @@ Authentication → URL Configuration:
   ```
   https://andersklevaas1.github.io/UI-DESIGN-PROSJEKT/**
   http://localhost:*/**
+  http://127.0.0.1:*/**
   ```
+
+### 2d. Lokal kjoring
+Google OAuth virker ikke hvis du apner prosjektet direkte som `file://.../index.html`, som ofte skjer med "Run Without Debugging".
+
+Bruk en lokal server i stedet, for eksempel:
+
+```bash
+python3 -m http.server 5500
+```
+
+Deretter apner du:
+
+```text
+http://localhost:5500
+```
+
+Hvis du bruker `127.0.0.1` i stedet for `localhost`, ma den ogsa ligge i Supabase Redirect URLs som vist over.
 
 ## 3. Deploy til GitHub Pages
 

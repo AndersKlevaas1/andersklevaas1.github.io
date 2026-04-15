@@ -18,11 +18,36 @@ window.rankedState = {
   currentIsland: null,
 };
 
+const PROFILE_LOAD_RETRIES = 8;
+const PROFILE_LOAD_DELAY_MS = 500;
+
 // ------------------------------------------------------------
 // Auth
 // ------------------------------------------------------------
+function getAuthRedirectUrl() {
+  const { protocol, hostname, origin, pathname } = window.location;
+  const isLocalhost = hostname === 'localhost' || hostname === '127.0.0.1';
+  const isSecureContext = protocol === 'https:' || (protocol === 'http:' && isLocalhost);
+
+  if (!isSecureContext) {
+    throw new Error(
+      'Google-innlogging krever at siden kjores fra https:// eller http://localhost. ' +
+      'Ikke apne index.html direkte med file://. Start prosjektet via en lokal server eller bruk GitHub Pages.'
+    );
+  }
+
+  return origin + pathname;
+}
+
 async function signInWithGoogle() {
-  const redirectTo = window.location.origin + window.location.pathname;
+  let redirectTo;
+  try {
+    redirectTo = getAuthRedirectUrl();
+  } catch (error) {
+    alert(error.message);
+    return;
+  }
+
   const { error } = await sb.auth.signInWithOAuth({
     provider: 'google',
     options: { redirectTo },
@@ -51,6 +76,38 @@ async function loadProfile() {
     return;
   }
   window.rankedState.profile = data;
+}
+
+async function ensureProfileLoaded() {
+  for (let attempt = 0; attempt < PROFILE_LOAD_RETRIES; attempt++) {
+    await loadProfile();
+    if (window.rankedState.profile) return true;
+    await new Promise(resolve => setTimeout(resolve, PROFILE_LOAD_DELAY_MS));
+  }
+  return false;
+}
+
+async function resumeActiveMatch() {
+  const { user } = window.rankedState;
+  if (!user) return;
+
+  const { data, error } = await sb
+    .from('matches')
+    .select('id')
+    .or(`player_a_id.eq.${user.id},player_b_id.eq.${user.id}`)
+    .eq('status', 'active')
+    .maybeSingle();
+
+  if (error) {
+    console.error('resumeActiveMatch:', error);
+    return;
+  }
+
+  if (data) {
+    await enterMatch(data.id);
+  } else if (!window.rankedState.matchId) {
+    showLobbyView('idle');
+  }
 }
 
 function renderAuthUI() {
@@ -96,6 +153,17 @@ function escapeHtml(s) {
 // Matchmaking
 // ------------------------------------------------------------
 async function findRankedMatch() {
+  if (!window.rankedState.user) {
+    alert('Logg inn med Google for å bli med i ranked-lobbyen.');
+    return;
+  }
+
+  const hasProfile = await ensureProfileLoaded();
+  if (!hasProfile) {
+    alert('Kunne ikke laste spillerprofilen din ennå. Prøv igjen om et par sekunder.');
+    return;
+  }
+
   const { data, error } = await sb.rpc('find_or_create_match');
   if (error) {
     alert('Matchmaking feilet: ' + error.message);
@@ -150,7 +218,9 @@ async function enterMatch(matchId) {
   await refreshMatch();
   subscribeToMatch(matchId);
   startHeartbeat();
-  showLobbyView('match');
+  if (window.rankedState.matchId) {
+    showLobbyView('match');
+  }
 }
 
 async function refreshMatch() {
@@ -340,6 +410,10 @@ function showRankedQuestion(q, island) {
 window.rankedDrawChanceCard = async function () {
   const { matchId } = window.rankedState;
   if (!matchId) return false;
+  if (!isMyTurn()) {
+    alert('Det er ikke din tur!');
+    return true;
+  }
   const { data, error } = await sb.rpc('draw_chance_card', { p_match_id: matchId });
   if (error) {
     alert('Feil: ' + error.message);
@@ -373,26 +447,22 @@ function showLobbyView(view) {
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     window.rankedState.user = session.user;
-    await loadProfile();
+    await ensureProfileLoaded();
   }
   renderAuthUI();
   await loadLeaderboard();
+  await resumeActiveMatch();
 
   sb.auth.onAuthStateChange(async (_event, session) => {
     window.rankedState.user = session?.user || null;
-    if (session) await loadProfile();
+    window.rankedState.profile = null;
+    if (session) {
+      await ensureProfileLoaded();
+      await resumeActiveMatch();
+    } else {
+      await leaveRankedMatch();
+    }
     renderAuthUI();
     await loadLeaderboard();
   });
-
-  // Resume eksisterende aktiv match
-  if (window.rankedState.user) {
-    const { data } = await sb
-      .from('matches')
-      .select('id')
-      .or(`player_a_id.eq.${window.rankedState.user.id},player_b_id.eq.${window.rankedState.user.id}`)
-      .eq('status', 'active')
-      .maybeSingle();
-    if (data) await enterMatch(data.id);
-  }
 })();
