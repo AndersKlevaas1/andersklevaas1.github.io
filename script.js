@@ -329,45 +329,52 @@ function setDifficulty(difficulty) {
  * 🎲 SJANSEKORT BANK
  *************************************************/
 
+// Hvert kort har en "weight" som bestemmer hvor sannsynlig det er å bli trukket.
+// Høyere weight = større sjanse. Sabotasjekort har lav weight = sjeldnere.
 const chanceCards = [
-  "Du løste en bug! Gå 1 steg fremover.",
-  "Feil i koden! Gå 1 steg bakover.",
-  "Du brukte beste praksis! Gå 2 steg fremover.",
-  "Syntax error! Gå 2 steg bakover.",
-  "Du lærte noe nytt! Kast terningen på nytt.",
-  "Variabelen din inneholder null. Gå 1 steg bakover.",
-  "Perfekt testresultat! Gå 2 steg fremover.",
-  "Du glemte et semikolon. Gå 1 steg bakover.",
-  "Koden din er optimalisert! Gå 3 steg fremover.",
-  "Stack overflow! Gå 3 steg bakover.",
-  "Du skrev ryddig kode! Gå 1 steg fremover.",
-  "Endelig løste du algoritmen! Gå 3 steg fremover.",
-  "Debuggingen tok lenger tid enn forventet. Stå over 1 runde.",
-  "Du refaktorerte koden! Gå 2 steg fremover.",
-  "Runtime error! Stå over 1 runde.",
-  "Du implementerte en ny funksjon! Gå 1 steg fremover.",
-  "Uendelig løkke! Gå 2 steg bakover.",
-  "Alle tester grønn! Gå 2 steg fremover.",
-  "Du leste dokumentasjonen! Gå 1 steg fremover.",
-  "Memory leak! Gå 1 steg bakover.",
-  "Du brukte riktig datatype! Gå 1 steg fremover.",
-  "Regex-mønsteret fungerte! Kast terningen på nytt.",
-  "Nettleseren krasjet. Stå over 1 runde.",
-  "Klasser og arv mestret! Gå 2 steg fremover.",
-  "JSON-feil! Gå 1 steg bakover.",
-  "API-kallet returnerte success! Gå 3 steg fremover.",
+  { text: "Du løste en bug! Gå 1 steg fremover.", weight: 10 },
+  { text: "Feil i koden! Gå 1 steg bakover.", weight: 10 },
+  { text: "Du brukte beste praksis! Gå 2 steg fremover.", weight: 8 },
+  { text: "Syntax error! Gå 2 steg bakover.", weight: 8 },
+  { text: "Du lærte noe nytt! Kast terningen på nytt.", weight: 6 },
+  { text: "Variabelen din inneholder null. Gå 1 steg bakover.", weight: 10 },
+  { text: "Perfekt testresultat! Gå 2 steg fremover.", weight: 8 },
+  { text: "Du glemte et semikolon. Gå 1 steg bakover.", weight: 10 },
+  { text: "Koden din er optimalisert! Gå 3 steg fremover.", weight: 4 },
+  { text: "Stack overflow! Gå 3 steg bakover.", weight: 4 },
+  { text: "Du skrev ryddig kode! Gå 1 steg fremover.", weight: 10 },
+  { text: "Endelig løste du algoritmen! Gå 3 steg fremover.", weight: 4 },
+  { text: "Debuggingen tok lenger tid enn forventet. Stå over 1 runde.", weight: 5 },
+  { text: "Du refaktorerte koden! Gå 2 steg fremover.", weight: 8 },
+  { text: "Runtime error! Stå over 1 runde.", weight: 5 },
+  { text: "Du implementerte en ny funksjon! Gå 1 steg fremover.", weight: 10 },
+  { text: "Uendelig løkke! Gå 2 steg bakover.", weight: 8 },
+  { text: "Alle tester grønn! Gå 2 steg fremover.", weight: 8 },
+  { text: "Du leste dokumentasjonen! Gå 1 steg fremover.", weight: 10 },
+  { text: "Memory leak! Gå 1 steg bakover.", weight: 10 },
+  { text: "Du brukte riktig datatype! Gå 1 steg fremover.", weight: 10 },
+  { text: "Regex-mønsteret fungerte! Kast terningen på nytt.", weight: 6 },
+  { text: "Nettleseren krasjet. Stå over 1 runde.", weight: 5 },
+  { text: "Klasser og arv mestret! Gå 2 steg fremover.", weight: 8 },
+  { text: "JSON-feil! Gå 1 steg bakover.", weight: 10 },
+  { text: "API-kallet returnerte success! Gå 3 steg fremover.", weight: 4 },
+  { text: "Teleport! Flytt til øyen tvers ovenfor.", weight: 4 },
+  { text: "Kast terning — flytt til øy med det tallet.", weight: 4 },
 
-  // 🔥 SABOTASJEKORT
-  "SABOTASJE: Du pushet til main uten å teste! En motspiller (du velger) må gå 2 steg bakover.",
-  "SABOTASJE: Merge conflict! Velg en motspiller som må stå over 1 runde.",
-  "SABOTASJE: Du slettet en annens branch ved et uhell. En motspiller går 3 steg bakover.",
-  "SABOTASJE: Du introduserte en bug i teamets kode. Alle andre spillere går 1 steg bakover.",
-  "SABOTASJE: Force push! Velg en motspiller som mister sitt neste terningkast.",
-  "SABOTASJE: Du kommenterte ut testene. En motspiller (du velger) går 2 steg bakover.",
-  "SABOTASJE: DDOS-angrep! Spilleren til venstre for deg står over 1 runde.",
-  "SABOTASJE: Du byttet om på variabelnavnene til en motspiller. Velg én som går 2 steg bakover.",
-  "SABOTASJE: Produksjonsserveren er nede! Alle andre spillere stopper der de står (ingen bevegelse) neste runde.",
-  "SABOTASJE: Du stjal kaffen til utvikleren ved siden av. Spilleren til høyre for deg går 1 steg bakover."
+  // 🌟 SJELDEN JACKPOT
+  { text: "🌟 JACKPOT! Få en valgfri badge.", weight: 0.5 },
+
+  // 🔥 SABOTASJEKORT — sjeldne (lav weight)
+  { text: "SABOTASJE: Du pushet til main uten å teste! En motspiller (du velger) må gå 2 steg bakover.", weight: 2 },
+  { text: "SABOTASJE: Merge conflict! Velg en motspiller som må stå over 1 runde.", weight: 2 },
+  { text: "SABOTASJE: Du slettet en annens branch ved et uhell. En motspiller går 3 steg bakover.", weight: 1 },
+  { text: "SABOTASJE: Du introduserte en bug i teamets kode. Alle andre spillere går 1 steg bakover.", weight: 1 },
+  { text: "SABOTASJE: Force push! Velg en motspiller som mister sitt neste terningkast.", weight: 2 },
+  { text: "SABOTASJE: Du kommenterte ut testene. En motspiller (du velger) går 2 steg bakover.", weight: 2 },
+  { text: "SABOTASJE: DDOS-angrep! Spilleren til venstre for deg står over 1 runde.", weight: 2 },
+  { text: "SABOTASJE: Du byttet om på variabelnavnene til en motspiller. Velg én som går 2 steg bakover.", weight: 2 },
+  { text: "SABOTASJE: Produksjonsserveren er nede! Alle andre spillere stopper der de står neste runde.", weight: 1 },
+  { text: "SABOTASJE: Du stjal kaffen til utvikleren ved siden av. Spilleren til høyre for deg går 1 steg bakover.", weight: 3 }
 ];
 
 /*************************************************
@@ -443,12 +450,17 @@ function showQuestion(question) {
  *************************************************/
 
 function drawChanceCard() {
-  const randomIndex = Math.floor(Math.random() * chanceCards.length);
-  const card = chanceCards[randomIndex];
+  const totalWeight = chanceCards.reduce((sum, c) => sum + c.weight, 0);
+  let roll = Math.random() * totalWeight;
+  let card = chanceCards[0];
+  for (const c of chanceCards) {
+    roll -= c.weight;
+    if (roll <= 0) { card = c; break; }
+  }
 
   const box = document.getElementById("chanceCardBox");
   box.classList.remove("hidden");
-  document.getElementById("chanceCardText").innerText = card;
+  document.getElementById("chanceCardText").innerText = card.text;
 
   box.scrollIntoView({ behavior: "smooth", block: "center" });
 }
