@@ -459,6 +459,7 @@ function drawChanceCard() {
 
 function closeChanceCard() {
   document.getElementById("chanceCardBox").classList.add("hidden");
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 /*************************************************
