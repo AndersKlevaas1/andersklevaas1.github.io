@@ -66,6 +66,13 @@
     </button>
   </div>
 
+  <!-- Sjansekort-boks (SKJULT FRA START) -->
+  <div id="chanceCardBox" class="hidden">
+    <h2><img src="img/Sjansefelt.png?v=2" alt="" class="chance-icon chance-icon-lg" /> Sjansefelt</h2>
+    <p id="chanceCardText"></p>
+    <button onclick="closeChanceCard()">Lukk kort</button>
+  </div>
+
   <!-- Badge-oversikt -->
   <section class="badge-tracker">
     <div class="badge-tracker-header">
@@ -89,13 +96,6 @@
 
     <div id="badgeTrackerTable" class="badge-table-wrapper"></div>
   </section>
-
-  <!-- Sjansekort-boks (SKJULT FRA START) -->
-  <div id="chanceCardBox" class="hidden">
-    <h2><img src="img/Sjansefelt.png?v=2" alt="" class="chance-icon chance-icon-lg" /> Sjansefelt</h2>
-    <p id="chanceCardText"></p>
-    <button onclick="closeChanceCard()">Lukk kort</button>
-  </div>
 
   <!-- JavaScript -->
   <script src="script.js"></script>

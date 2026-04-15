@@ -450,7 +450,7 @@ function drawChanceCard() {
   box.classList.remove("hidden");
   document.getElementById("chanceCardText").innerText = card;
 
-  window.scrollTo(0, box.offsetTop - 50);
+  box.scrollIntoView({ behavior: "smooth", block: "center" });
 }
 
 /*************************************************
