@@ -1,29 +1,103 @@
 <!DOCTYPE html>
 <html lang="no">
 <head>
-  <meta charset="UTF-8">
-  <title>Code Quest – Øyvalg</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Code Island – Lær å kode</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
-  <h1>🏝️ Velg øya du står på</h1>
-  <p>Klikk på øya for å få et spørsmål</p>
+  <h1 class="site-title"><img src="img/Logo.png" alt="Code Island – Lær å kode" class="site-logo" /></h1>
+  <p>Velg øya du står på i brettspillet for å få et spørsmål</p>
 
-  <div class="islands">
-    <button onclick="chooseIsland('variable')">📦 Variabel-øya</button>
-    <button onclick="chooseIsland('datatype')">🔤 Datatype-øya</button>
-    <button onclick="chooseIsland('object')">🧱 Objekt-øya</button>
-    <button onclick="chooseIsland('logic')">🧠 Logikk-øya</button>
-    <button onclick="chooseIsland('loop')">🔁 Løkke-øya</button>
-    <button onclick="chooseIsland('debug')">🐞 Debug-øya</button>
+  <!-- Vanskelighetsgrad-knapper -->
+  <div class="difficulty-section">
+    <p style="margin-top: 0; margin-bottom: 15px; font-weight: bold;">Vanskelighetsgrad:</p>
+    <div class="difficulty-buttons">
+      <button class="difficulty-btn active" onclick="setDifficulty('ez')">Ez</button>
+      <button class="difficulty-btn" onclick="setDifficulty('med')">Med</button>
+      <button class="difficulty-btn" onclick="setDifficulty('hard')">Hard</button>
+    </div>
   </div>
 
+  <!-- Øy-knapper -->
+  <div class="islands">
+    <button class="island-btn" onclick="chooseIsland('variable')">
+      <img src="img/Badge1.png" alt="" class="island-badge" />
+      <span class="island-label"><span class="island-num">1</span>Variabel-øya</span>
+    </button>
+    <button class="island-btn" onclick="chooseIsland('datatype')">
+      <img src="img/Badge2.png" alt="" class="island-badge" />
+      <span class="island-label"><span class="island-num">2</span>Datatype-øya</span>
+    </button>
+    <button class="island-btn" onclick="chooseIsland('object')">
+      <img src="img/Badge3.png" alt="" class="island-badge" />
+      <span class="island-label"><span class="island-num">3</span>Objekt-øya</span>
+    </button>
+    <button class="island-btn" onclick="chooseIsland('logic')">
+      <img src="img/Badge4.png" alt="" class="island-badge" />
+      <span class="island-label"><span class="island-num">4</span>Logikk-øya</span>
+    </button>
+    <button class="island-btn" onclick="chooseIsland('loop')">
+      <img src="img/Badge5.png" alt="" class="island-badge" />
+      <span class="island-label"><span class="island-num">5</span>Løkke-øya</span>
+    </button>
+    <button class="island-btn" onclick="chooseIsland('debug')">
+      <img src="img/Badge6.png" alt="" class="island-badge" />
+      <span class="island-label"><span class="island-num">6</span>Debug-øya</span>
+    </button>
+  </div>
+
+  <!-- Spørsmålsboks (SKJULT FRA START) -->
   <div id="questionBox" class="hidden">
     <h2 id="questionText"></h2>
     <div id="answers"></div>
   </div>
 
+  <!-- Sjansekort-knapp og visning -->
+  <div class="chance-card-section">
+    <button id="chanceCardBtn" class="chance-btn" onclick="drawChanceCard()">
+      <img src="img/Sjansefelt.png?v=2" alt="" class="chance-icon" />
+      <span>Sjansefelt?</span>
+    </button>
+  </div>
+
+  <!-- Sjansekort-boks (SKJULT FRA START) -->
+  <div id="chanceCardBox" class="hidden">
+    <h2><img src="img/Sjansefelt.png?v=2" alt="" class="chance-icon chance-icon-lg" /> Sjansefelt</h2>
+    <p id="chanceCardText"></p>
+    <button onclick="closeChanceCard()">Lukk kort</button>
+  </div>
+
+  <!-- Badge-oversikt -->
+  <section class="badge-tracker">
+    <div class="badge-tracker-header">
+      <div>
+        <p class="section-label">Badge-oversikt</p>
+        <h2>Hvem har hvilke badges?</h2>
+        <p class="badge-tracker-intro">Legg til spillerne og huk av én badge per øy når de vinner den.</p>
+      </div>
+      <button class="secondary-btn" type="button" onclick="resetBadges()">Nullstill badges</button>
+    </div>
+
+    <div class="player-form">
+      <input
+        type="text"
+        id="playerNameInput"
+        placeholder="Legg til spiller"
+        maxlength="20"
+      />
+      <button class="primary-btn" type="button" onclick="addPlayer()">Legg til spiller</button>
+    </div>
+
+    <div id="badgeTrackerTable" class="badge-table-wrapper"></div>
+  </section>
+
+  <!-- JavaScript -->
   <script src="script.js"></script>
 </body>
 </html>
