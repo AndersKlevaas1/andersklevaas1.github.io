@@ -382,6 +382,12 @@ const chanceCards = [
  *************************************************/
 
 function chooseIsland(island) {
+  // Ranked mode: la ranked.js håndtere det
+  if (window.rankedState && window.rankedState.matchId && typeof window.rankedChooseIsland === 'function') {
+    window.rankedChooseIsland(island);
+    return;
+  }
+
   if (decks[island][currentDifficulty].length === 0) {
     // Gjenfyll bunken hvis den er tom
     decks[island][currentDifficulty] = [...questions[island][currentDifficulty]];
@@ -450,6 +456,11 @@ function showQuestion(question) {
  *************************************************/
 
 function drawChanceCard() {
+  if (window.rankedState && window.rankedState.matchId && typeof window.rankedDrawChanceCard === 'function') {
+    window.rankedDrawChanceCard();
+    return;
+  }
+
   const totalWeight = chanceCards.reduce((sum, c) => sum + c.weight, 0);
   let roll = Math.random() * totalWeight;
   let card = chanceCards[0];

@@ -5,14 +5,55 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Code Island – Lær å kode</title>
 
+  <!-- Supabase SDK fra CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Vår klient-konfig -->
+  <script src="supabase-client.js"></script>
   <!-- CSS -->
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 
+  <!-- Auth / ranked header -->
+  <header class="ranked-header">
+    <div id="authArea">
+      <button id="signInBtn" class="primary-btn" type="button" onclick="signInWithGoogle()">Logg inn med Google</button>
+      <div id="userInfo" class="hidden">
+        <span id="userName"></span>
+        <span class="elo-badge">ELO: <strong id="userElo">–</strong></span>
+        <button class="secondary-btn" type="button" onclick="signOut()">Logg ut</button>
+      </div>
+    </div>
+  </header>
+
   <h1 class="site-title"><img src="img/Logo.png" alt="Code Island – Lær å kode" class="site-logo" /></h1>
   <p>Velg øya du står på i brettspillet for å få et spørsmål</p>
+
+  <!-- Ranked lobby -->
+  <section id="rankedLobby" class="ranked-section hidden">
+    <h2>Ranked Multiplayer</h2>
+    <div id="lobbyIdle">
+      <button class="primary-btn" type="button" onclick="findRankedMatch()">Finn ranked match</button>
+    </div>
+    <div id="lobbyQueued" class="hidden">
+      <p>Venter på motstander... <span class="spinner"></span></p>
+      <button class="secondary-btn" type="button" onclick="cancelQueue()">Avbryt</button>
+    </div>
+    <div id="lobbyMatch" class="hidden">
+      <div class="match-header">
+        <div class="match-player"><strong>Deg</strong> — <span id="myBadges">0</span>/6 badges</div>
+        <div class="match-vs">VS</div>
+        <div class="match-player"><strong id="opponentName">Motstander</strong> — <span id="opponentBadges">0</span>/6 badges</div>
+      </div>
+      <p id="turnIndicator" class="turn-indicator">Din tur</p>
+      <button class="secondary-btn" type="button" onclick="leaveRankedMatch()">Forlat match</button>
+    </div>
+    <div id="lobbyLeaderboard">
+      <h3>Topp 10</h3>
+      <ol id="leaderboardList"></ol>
+    </div>
+  </section>
 
   <!-- Vanskelighetsgrad-knapper -->
   <div class="difficulty-section">
@@ -99,5 +140,6 @@
 
   <!-- JavaScript -->
   <script src="script.js"></script>
+  <script src="ranked.js"></script>
 </body>
 </html>
