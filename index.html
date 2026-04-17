@@ -36,16 +36,16 @@
     <div id="lobbyIdle">
       <button class="primary-btn" type="button" onclick="findRankedMatch()">Finn ranked match</button>
     </div>
-    <div id="lobbyQueued" class="hidden">
-      <p>Venter på motstander... <span class="spinner"></span></p>
-      <button class="secondary-btn" type="button" onclick="cancelQueue()">Avbryt</button>
+    <div id="lobbyWaiting" class="hidden">
+      <h3 class="lobby-title">Lobby <span class="spinner"></span></h3>
+      <ul id="lobbyPlayerList" class="lobby-player-list"></ul>
+      <p id="lobbyPlayerCount" class="lobby-count">1 / 8 spillere</p>
+      <p id="lobbyWaitingMsg" class="lobby-msg">Venter på flere spillere...</p>
+      <button id="startMatchBtn" class="primary-btn hidden" type="button" onclick="startMatch()">Start spill</button>
+      <button class="secondary-btn" type="button" onclick="leaveRankedMatch()">Forlat lobby</button>
     </div>
     <div id="lobbyMatch" class="hidden">
-      <div class="match-header">
-        <div class="match-player"><strong>Deg</strong> — <span id="myBadges">0</span>/6 badges</div>
-        <div class="match-vs">VS</div>
-        <div class="match-player"><strong id="opponentName">Motstander</strong> — <span id="opponentBadges">0</span>/6 badges</div>
-      </div>
+      <div id="matchPlayerList" class="match-players-list"></div>
       <p id="turnIndicator" class="turn-indicator">Din tur</p>
       <button class="secondary-btn" type="button" onclick="leaveRankedMatch()">Forlat match</button>
     </div>

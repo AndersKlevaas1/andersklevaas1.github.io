@@ -5,13 +5,12 @@
 
 const sb = window.sb;
 
-// Global ranked state
 window.rankedState = {
   user: null,
   profile: null,
   matchId: null,
   match: null,
-  isPlayerA: false,
+  isHost: false,
   channel: null,
   heartbeatTimer: null,
   currentQuestion: null,
@@ -93,9 +92,9 @@ async function resumeActiveMatch() {
 
   const { data, error } = await sb
     .from('matches')
-    .select('id')
-    .or(`player_a_id.eq.${user.id},player_b_id.eq.${user.id}`)
-    .eq('status', 'active')
+    .select('id, status')
+    .contains('player_ids', [user.id])
+    .in('status', ['waiting', 'active'])
     .maybeSingle();
 
   if (error) {
@@ -103,9 +102,14 @@ async function resumeActiveMatch() {
     return;
   }
 
-  if (data) {
+  if (data?.status === 'waiting') {
+    window.rankedState.matchId = data.id;
+    subscribeToMatch(data.id);
+    showLobbyView('waiting');
+    await refreshLobby();
+  } else if (data?.status === 'active') {
     await enterMatch(data.id);
-  } else if (!window.rankedState.matchId) {
+  } else {
     showLobbyView('idle');
   }
 }
@@ -113,20 +117,73 @@ async function resumeActiveMatch() {
 function renderAuthUI() {
   const { user, profile } = window.rankedState;
   const signInBtn = document.getElementById('signInBtn');
-  const userInfo = document.getElementById('userInfo');
-  const lobby = document.getElementById('rankedLobby');
+  const userInfo  = document.getElementById('userInfo');
+  const lobby     = document.getElementById('rankedLobby');
 
   if (user) {
     signInBtn.classList.add('hidden');
     userInfo.classList.remove('hidden');
     lobby.classList.remove('hidden');
     document.getElementById('userName').innerText = profile?.username || user.email || '';
-    document.getElementById('userElo').innerText = profile?.elo ?? '–';
+    document.getElementById('userElo').innerText  = profile?.elo ?? '–';
   } else {
     signInBtn.classList.remove('hidden');
     userInfo.classList.add('hidden');
     lobby.classList.add('hidden');
   }
+}
+
+// ------------------------------------------------------------
+// Badge-tracker synkronisering
+// ------------------------------------------------------------
+const BADGE_ISLAND_KEYS = ['variable', 'datatype', 'object', 'logic', 'loop', 'debug'];
+
+function syncPlayersToTracker(playerIds, playerMap) {
+  if (typeof players === 'undefined' || typeof savePlayers === 'undefined') return;
+  let changed = false;
+  playerIds.forEach(pid => {
+    const profile = playerMap[pid];
+    if (!profile) return;
+    if (!players.find(p => p.id === pid)) {
+      players.push({
+        id: pid,
+        name: profile.username || 'Spiller',
+        badges: typeof createEmptyBadges === 'function'
+          ? createEmptyBadges()
+          : Object.fromEntries(BADGE_ISLAND_KEYS.map(k => [k, false]))
+      });
+      changed = true;
+    }
+  });
+  if (changed) { savePlayers(); renderBadgeTracker(); }
+}
+
+function syncBadgesToTracker(match, playerMap) {
+  if (typeof players === 'undefined' || typeof savePlayers === 'undefined') return;
+  let changed = false;
+  match.player_ids.forEach(pid => {
+    const profile = playerMap[pid];
+    if (!profile) return;
+    let player = players.find(p => p.id === pid);
+    if (!player) {
+      player = {
+        id: pid,
+        name: profile.username || 'Spiller',
+        badges: Object.fromEntries(BADGE_ISLAND_KEYS.map(k => [k, false]))
+      };
+      players.push(player);
+      changed = true;
+    }
+    const wonIslands = match.player_islands?.[pid] ?? [];
+    BADGE_ISLAND_KEYS.forEach(key => {
+      const has = Array.isArray(wonIslands) && wonIslands.includes(key);
+      if (player.badges[key] !== has) {
+        player.badges[key] = has;
+        changed = true;
+      }
+    });
+  });
+  if (changed) { savePlayers(); renderBadgeTracker(); }
 }
 
 // ------------------------------------------------------------
@@ -150,7 +207,7 @@ function escapeHtml(s) {
 }
 
 // ------------------------------------------------------------
-// Matchmaking
+// Matchmaking / Lobby
 // ------------------------------------------------------------
 async function findRankedMatch() {
   if (!window.rankedState.user) {
@@ -169,45 +226,94 @@ async function findRankedMatch() {
     alert('Matchmaking feilet: ' + error.message);
     return;
   }
+
   const result = Array.isArray(data) ? data[0] : data;
   if (!result) return;
 
-  if (result.status === 'queued') {
-    showLobbyView('queued');
-    // Poll for match
-    window.rankedState.queuePoll = setInterval(pollForMatch, 2000);
-  } else if (result.status === 'matched' || result.status === 'resumed') {
+  window.rankedState.matchId = result.match_id;
+
+  if (result.match_status === 'waiting') {
+    subscribeToMatch(result.match_id);
+    showLobbyView('waiting');
+    await refreshLobby();
+  } else if (result.match_status === 'active') {
     await enterMatch(result.match_id);
   }
 }
 
-async function pollForMatch() {
-  const { user } = window.rankedState;
-  if (!user) return stopQueuePoll();
-  const { data, error } = await sb
+async function refreshLobby() {
+  const { matchId, user } = window.rankedState;
+  if (!matchId) return;
+
+  const { data: m, error } = await sb
     .from('matches')
-    .select('id')
-    .or(`player_a_id.eq.${user.id},player_b_id.eq.${user.id}`)
-    .eq('status', 'active')
+    .select('player_ids, host_id, max_players, status')
+    .eq('id', matchId)
     .maybeSingle();
-  if (error) return;
-  if (data) {
-    stopQueuePoll();
-    await enterMatch(data.id);
+
+  if (error || !m) return;
+
+  if (m.status === 'active') {
+    await enterMatch(matchId);
+    return;
+  }
+
+  if (m.status === 'finished') {
+    await leaveRankedMatch();
+    return;
+  }
+
+  // Hent spillerprofiler
+  const { data: players } = await sb
+    .from('profiles')
+    .select('id, username, elo')
+    .in('id', m.player_ids);
+
+  const playerMap = {};
+  (players || []).forEach(p => { playerMap[p.id] = p; });
+
+  const list = document.getElementById('lobbyPlayerList');
+  list.innerHTML = m.player_ids.map(pid => {
+    const p = playerMap[pid];
+    const name = p ? escapeHtml(p.username) : '...';
+    const elo  = p ? p.elo : '–';
+    const crown = pid === m.host_id ? ' 👑' : '';
+    return `<li>${name} (${elo})${crown}</li>`;
+  }).join('');
+
+  document.getElementById('lobbyPlayerCount').textContent =
+    `${m.player_ids.length} / ${m.max_players} spillere`;
+
+  syncPlayersToTracker(m.player_ids, playerMap);
+
+  const isHost = m.host_id === user.id;
+  window.rankedState.isHost = isHost;
+
+  const startBtn = document.getElementById('startMatchBtn');
+  const waitMsg  = document.getElementById('lobbyWaitingMsg');
+  const canStart = m.player_ids.length >= 2;
+
+  if (isHost) {
+    startBtn.classList.remove('hidden');
+    startBtn.disabled = !canStart;
+    waitMsg.textContent = canStart
+      ? 'Du kan starte spillet nå!'
+      : 'Venter på flere spillere...';
+  } else {
+    startBtn.classList.add('hidden');
+    waitMsg.textContent = 'Venter på at vertspiller skal starte...';
   }
 }
 
-function stopQueuePoll() {
-  if (window.rankedState.queuePoll) {
-    clearInterval(window.rankedState.queuePoll);
-    window.rankedState.queuePoll = null;
+async function startMatch() {
+  const { matchId } = window.rankedState;
+  if (!matchId) return;
+  const { error } = await sb.rpc('start_match', { p_match_id: matchId });
+  if (error) {
+    alert('Kunne ikke starte: ' + error.message);
+    return;
   }
-}
-
-async function cancelQueue() {
-  stopQueuePoll();
-  await sb.rpc('cancel_matchmaking');
-  showLobbyView('idle');
+  // Realtime-oppdatering trigger refreshMatch → enterMatch for alle spillere
 }
 
 // ------------------------------------------------------------
@@ -215,55 +321,83 @@ async function cancelQueue() {
 // ------------------------------------------------------------
 async function enterMatch(matchId) {
   window.rankedState.matchId = matchId;
-  await refreshMatch();
   subscribeToMatch(matchId);
   startHeartbeat();
-  if (window.rankedState.matchId) {
-    showLobbyView('match');
-  }
+  await refreshMatch();
 }
 
 async function refreshMatch() {
   const { matchId, user } = window.rankedState;
   if (!matchId) return;
+
   const { data, error } = await sb
     .from('matches')
     .select('*')
     .eq('id', matchId)
     .maybeSingle();
+
   if (error || !data) return;
+
   window.rankedState.match = data;
-  window.rankedState.isPlayerA = (data.player_a_id === user.id);
+
+  if (data.status === 'waiting') {
+    showLobbyView('waiting');
+    await refreshLobby();
+    return;
+  }
 
   if (data.status === 'finished') {
     await handleMatchFinished(data);
     return;
   }
 
-  // Hent motstanderens navn
-  const opponentId = window.rankedState.isPlayerA ? data.player_b_id : data.player_a_id;
-  const { data: opp } = await sb
+  // Aktiv match
+  showLobbyView('match');
+
+  // Hent alle spillerprofiler
+  const { data: players } = await sb
     .from('profiles')
-    .select('username, elo')
-    .eq('id', opponentId)
-    .maybeSingle();
-  document.getElementById('opponentName').innerText = opp ? `${opp.username} (${opp.elo})` : 'Motstander';
+    .select('id, username, elo')
+    .in('id', data.player_ids);
 
-  const myBadges = window.rankedState.isPlayerA ? data.player_a_badges : data.player_b_badges;
-  const oppBadges = window.rankedState.isPlayerA ? data.player_b_badges : data.player_a_badges;
-  document.getElementById('myBadges').innerText = myBadges;
-  document.getElementById('opponentBadges').innerText = oppBadges;
+  const playerMap = {};
+  (players || []).forEach(p => { playerMap[p.id] = p; });
 
-  const myTurn = isMyTurn();
-  document.getElementById('turnIndicator').innerText = myTurn ? 'Din tur' : 'Motstanders tur';
-  document.getElementById('turnIndicator').className = 'turn-indicator ' + (myTurn ? 'my-turn' : 'their-turn');
+  syncBadgesToTracker(data, playerMap);
+
+  // current_turn_index er 1-basert (PostgreSQL-array), player_ids er 0-basert i JS
+  const currentPlayerId = data.player_ids[data.current_turn_index - 1];
+
+  const list = document.getElementById('matchPlayerList');
+  list.innerHTML = data.player_ids.map(pid => {
+    const p         = playerMap[pid];
+    const name      = p ? escapeHtml(p.username) : '...';
+    const badges    = (data.player_badges?.[pid] ?? 0);
+    const isMe      = pid === user.id;
+    const isCurrent = pid === currentPlayerId;
+    return `<div class="match-player-card${isMe ? ' is-me' : ''}${isCurrent ? ' is-current-turn' : ''}">
+      <span class="mpc-name">${name}${isMe ? ' (deg)' : ''}</span>
+      <span class="mpc-badges">${badges}/6 🏅</span>
+    </div>`;
+  }).join('');
+
+  const myTurn       = isMyTurn();
+  const turnIndicator = document.getElementById('turnIndicator');
+  if (myTurn) {
+    turnIndicator.textContent = 'Din tur';
+    turnIndicator.className   = 'turn-indicator my-turn';
+  } else {
+    const cp = playerMap[currentPlayerId];
+    turnIndicator.textContent = cp ? `${escapeHtml(cp.username)} sin tur` : 'Motstanders tur';
+    turnIndicator.className   = 'turn-indicator their-turn';
+  }
 }
 
 function isMyTurn() {
-  const { match, isPlayerA } = window.rankedState;
-  if (!match) return false;
-  return (match.current_turn === 'player_a' && isPlayerA)
-      || (match.current_turn === 'player_b' && !isPlayerA);
+  const { match, user } = window.rankedState;
+  if (!match || match.status !== 'active') return false;
+  // current_turn_index er 1-basert i Postgres, men player_ids er 0-basert i JS
+  return match.player_ids[match.current_turn_index - 1] === user.id;
 }
 
 function subscribeToMatch(matchId) {
@@ -275,9 +409,6 @@ function subscribeToMatch(matchId) {
     .on('postgres_changes',
       { event: 'UPDATE', schema: 'public', table: 'matches', filter: `id=eq.${matchId}` },
       () => refreshMatch())
-    .on('postgres_changes',
-      { event: 'UPDATE', schema: 'public', table: 'match_state', filter: `match_id=eq.${matchId}` },
-      () => { /* no-op for now */ })
     .subscribe();
   window.rankedState.channel = ch;
 }
@@ -300,14 +431,25 @@ function stopHeartbeat() {
 
 async function leaveRankedMatch() {
   stopHeartbeat();
-  stopQueuePoll();
+
+  const { match, matchId } = window.rankedState;
+  if (matchId) {
+    if (!match || match.status === 'waiting') {
+      await sb.rpc('leave_lobby');
+    } else if (match.status === 'active') {
+      await sb.rpc('leave_active_match');
+    }
+  }
+
   if (window.rankedState.channel) {
     sb.removeChannel(window.rankedState.channel);
     window.rankedState.channel = null;
   }
-  window.rankedState.matchId = null;
-  window.rankedState.match = null;
+
+  window.rankedState.matchId         = null;
+  window.rankedState.match           = null;
   window.rankedState.currentQuestion = null;
+  window.rankedState.isHost          = false;
   showLobbyView('idle');
 }
 
@@ -333,10 +475,9 @@ window.rankedChooseIsland = async function (island) {
     return true;
   }
   const difficulty = (typeof currentDifficulty !== 'undefined') ? currentDifficulty : 'ez';
-  // Mapping: script.js bruker 'ez' men DB forventer det samme — vi seeder med 'ez','med','hard'
   const { data, error } = await sb.rpc('get_question_for_match', {
-    p_match_id: matchId,
-    p_island: island,
+    p_match_id:   matchId,
+    p_island:     island,
     p_difficulty: difficulty,
   });
   if (error) {
@@ -349,7 +490,7 @@ window.rankedChooseIsland = async function (island) {
     return true;
   }
   window.rankedState.currentQuestion = q;
-  window.rankedState.currentIsland = island;
+  window.rankedState.currentIsland   = island;
   showRankedQuestion(q, island);
   return true;
 };
@@ -363,7 +504,6 @@ function showRankedQuestion(q, island) {
 
   const options = Array.isArray(q.options) ? q.options : JSON.parse(q.options);
   const indexed = options.map((text, idx) => ({ text, idx }));
-  // Shuffle
   for (let i = indexed.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [indexed[i], indexed[j]] = [indexed[j], indexed[i]];
@@ -376,9 +516,9 @@ function showRankedQuestion(q, island) {
     btn.onclick = async () => {
       btn.disabled = true;
       const { data, error } = await sb.rpc('submit_answer', {
-        p_match_id: window.rankedState.matchId,
+        p_match_id:    window.rankedState.matchId,
         p_answer_index: opt.idx,
-        p_island: island,
+        p_island:      island,
       });
       if (error) {
         alert('Feil: ' + error.message);
@@ -389,7 +529,9 @@ function showRankedQuestion(q, island) {
       const icon = document.createElement('span');
       icon.classList.add('feedback-icon');
       if (result.correct) {
-        icon.innerText = '✔';
+        const progress = result.island_progress ?? 0;
+        const gotBadge = progress >= 3;
+        icon.innerText = gotBadge ? '🏅 Badge!' : `✔ (${progress}/3)`;
         icon.classList.add('correct-icon');
       } else {
         icon.innerText = '✖';
@@ -399,7 +541,7 @@ function showRankedQuestion(q, island) {
       setTimeout(() => {
         box.classList.add('hidden');
         refreshMatch();
-      }, 1500);
+      }, 1800);
     };
     answersDiv.appendChild(btn);
   });
@@ -420,7 +562,7 @@ window.rankedDrawChanceCard = async function () {
     return true;
   }
   const card = Array.isArray(data) ? data[0] : data;
-  const box = document.getElementById('chanceCardBox');
+  const box  = document.getElementById('chanceCardBox');
   box.classList.remove('hidden');
   document.getElementById('chanceCardText').innerText = card.text;
   box.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -431,13 +573,13 @@ window.rankedDrawChanceCard = async function () {
 // UI view switching
 // ------------------------------------------------------------
 function showLobbyView(view) {
-  const idle = document.getElementById('lobbyIdle');
-  const queued = document.getElementById('lobbyQueued');
-  const match = document.getElementById('lobbyMatch');
-  [idle, queued, match].forEach(el => el.classList.add('hidden'));
-  if (view === 'idle') idle.classList.remove('hidden');
-  if (view === 'queued') queued.classList.remove('hidden');
-  if (view === 'match') match.classList.remove('hidden');
+  const idle    = document.getElementById('lobbyIdle');
+  const waiting = document.getElementById('lobbyWaiting');
+  const match   = document.getElementById('lobbyMatch');
+  [idle, waiting, match].forEach(el => el.classList.add('hidden'));
+  if (view === 'idle')    idle.classList.remove('hidden');
+  if (view === 'waiting') waiting.classList.remove('hidden');
+  if (view === 'match')   match.classList.remove('hidden');
 }
 
 // ------------------------------------------------------------
@@ -454,7 +596,7 @@ function showLobbyView(view) {
   await resumeActiveMatch();
 
   sb.auth.onAuthStateChange(async (_event, session) => {
-    window.rankedState.user = session?.user || null;
+    window.rankedState.user    = session?.user || null;
     window.rankedState.profile = null;
     if (session) {
       await ensureProfileLoaded();
