@@ -5,55 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Code Island – Lær å kode</title>
 
-  <!-- Supabase SDK fra CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <!-- Vår klient-konfig -->
-  <script src="supabase-client.js"></script>
+  <!-- Ingen database nødvendig. Lokal/Cloudflare lobby lastes via local-lobby.js. -->
   <!-- CSS -->
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 
-  <!-- Auth / ranked header -->
+  <!-- Enkel topp uten innlogging -->
   <header class="ranked-header">
-    <div id="authArea">
-      <button id="signInBtn" class="primary-btn" type="button" onclick="signInWithGoogle()">Logg inn med Google</button>
-      <div id="userInfo" class="hidden">
-        <span id="userName"></span>
-        <span class="elo-badge">ELO: <strong id="userElo">–</strong></span>
-        <button class="secondary-btn" type="button" onclick="signOut()">Logg ut</button>
-      </div>
-    </div>
+    <div style="padding:6px 0; font-weight:600;">Multiplayer-lobby uten innlogging</div>
   </header>
 
   <h1 class="site-title"><img src="img/Logo.png" alt="Code Island – Lær å kode" class="site-logo" /></h1>
   <p>Velg øya du står på i brettspillet for å få et spørsmål</p>
 
-  <!-- Ranked lobby -->
-  <section id="rankedLobby" class="ranked-section hidden">
-    <h2>Ranked Multiplayer</h2>
-    <div id="lobbyIdle">
-      <button class="primary-btn" type="button" onclick="findRankedMatch()">Finn ranked match</button>
+  <!-- Lokal/Cloudflare lobby (ingen database) -->
+  <section id="localLobbySection" class="ranked-section">
+    <h2>Lokal lobby (uten database)</h2>
+    <div class="player-form">
+      <input id="localNameInput" type="text" placeholder="Ditt navn" maxlength="20" />
+      <input id="localLobbyCodeInput" type="text" placeholder="Lobbykode (6 tegn)" maxlength="6" />
     </div>
-    <div id="lobbyWaiting" class="hidden">
-      <h3 class="lobby-title">Lobby <span class="spinner"></span></h3>
-      <ul id="lobbyPlayerList" class="lobby-player-list"></ul>
-      <p id="lobbyPlayerCount" class="lobby-count">1 / 8 spillere</p>
-      <p id="lobbyWaitingMsg" class="lobby-msg">Venter på flere spillere...</p>
-      <button id="startMatchBtn" class="primary-btn hidden" type="button" onclick="startMatch()">Start spill</button>
-      <button class="secondary-btn" type="button" onclick="leaveRankedMatch()">Forlat lobby</button>
+    <div style="margin: 8px 0;">
+      <button id="localCreateBtn" class="primary-btn" type="button" onclick="createLocalLobby()">Opprett lokal lobby</button>
+      <button id="localJoinBtn" class="secondary-btn" type="button" onclick="joinLocalLobby()">Bli med lokalt</button>
+      <button id="localLeaveBtn" class="secondary-btn" type="button" onclick="leaveLocalLobby()" disabled>Forlat</button>
+      <button id="localStartBtn" class="primary-btn hidden" type="button" onclick="startLocalLobby()">Start spill (vert)</button>
     </div>
-    <div id="lobbyMatch" class="hidden">
-      <div id="matchPlayerList" class="match-players-list"></div>
-      <p id="turnIndicator" class="turn-indicator">Din tur</p>
-      <button class="secondary-btn" type="button" onclick="leaveRankedMatch()">Forlat match</button>
-    </div>
-    <div id="lobbyLeaderboard">
-      <h3>Topp 10</h3>
-      <ol id="leaderboardList"></ol>
-    </div>
+    <p id="localLobbyStatus" class="lobby-msg"></p>
+    <ul id="localLobbyMembers" class="lobby-player-list"></ul>
+    <hr />
   </section>
+
+  <!-- Fjernet gammel Supabase-rank-lobby og invitasjonskode -->
 
   <!-- Vanskelighetsgrad-knapper -->
   <div class="difficulty-section">
@@ -139,7 +124,9 @@
   </section>
 
   <!-- JavaScript -->
+  <!-- Sett denne til din Cloudflare Worker URL når du er i produksjon: -->
+  <!-- <script>window.LOCAL_LOBBY_WS = 'wss://lobby.dittdomene.no';</script> -->
+  <script src="local-lobby.js"></script>
   <script src="script.js"></script>
-  <script src="ranked.js"></script>
 </body>
 </html>

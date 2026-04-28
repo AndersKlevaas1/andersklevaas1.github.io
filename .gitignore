@@ -1,2 +1,3 @@
 .aider*
 .DS_Store
+# Ikke relevant lenger etter fjerning av Supabase-gjestekontoer
